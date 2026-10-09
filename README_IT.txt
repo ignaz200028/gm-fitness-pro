@@ -22,3 +22,9 @@ Novità v10:
 - L'immagine viene usata nella libreria, nel selettore esercizi, nella scheda, nei dettagli dell'esercizio e nei progressi.
 
 v10.3 - Importazione scheda: aggiunti due comandi separati per scattare una foto oppure scegliere un'immagine dalla galleria/File su iPhone. La selezione galleria non usa più l'attributo capture, evitando l'apertura forzata della fotocamera.
+
+
+## v10.3.1
+- Aggiunta scelta tema Chiaro, Scuro o Come il sistema dalle Impostazioni.
+- La preferenza del tema viene salvata sul dispositivo.
+- La versione dell’app è visibile nelle Impostazioni.
