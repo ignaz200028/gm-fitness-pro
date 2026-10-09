@@ -22,11 +22,3 @@ Novità v10:
 - L'immagine viene usata nella libreria, nel selettore esercizi, nella scheda, nei dettagli dell'esercizio e nei progressi.
 
 v10.3 - Importazione scheda: aggiunti due comandi separati per scattare una foto oppure scegliere un'immagine dalla galleria/File su iPhone. La selezione galleria non usa più l'attributo capture, evitando l'apertura forzata della fotocamera.
-
-
-## v11.0
-- Superserie reali: blocchi Superserie x2/x3/x4 ecc. con più esercizi, giri, recupero e registrazione separata di kg/ripetizioni per ogni giro.
-- Creazione e modifica delle superserie direttamente nell editor della scheda, anche scegliendo esercizi dalla libreria.
-- Importazione OCR: riconosce la voce 'In super serie x3' e associa gli esercizi successivi alla superserie; tutto resta modificabile prima dell importazione.
-- Addome come sezione fissa opzionale a fine di ogni allenamento, modificabile da Programma.
-- Migrazione automatica delle vecchie superserie scritte come esercizio combinato.
