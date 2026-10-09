@@ -1,5 +1,1 @@
-const CACHE='gm-fitness-pro-v10-7';
-const ASSETS=['./','./index.html','./manifest.webmanifest','./icon.svg','./exercise-images/bench-press.jpg', './exercise-images/incline-dumbbell-press.jpg', './exercise-images/chest-press-machine.jpg', './exercise-images/cable-fly.jpg', './exercise-images/lat-pulldown.jpg', './exercise-images/seated-row.jpg', './exercise-images/t-bar-row.jpg', './exercise-images/face-pull.jpg', './exercise-images/leg-press.jpg', './exercise-images/hack-squat.jpg', './exercise-images/leg-extension.jpg', './exercise-images/leg-curl.jpg', './exercise-images/shoulder-press.jpg', './exercise-images/lateral-raise.jpg', './exercise-images/barbell-curl.jpg', './exercise-images/triceps-pushdown.jpg'] ;
-self.addEventListener('install',e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS))));
-self.addEventListener('activate',e=>e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k.startsWith('gm-fitness-pro-')&&k!==CACHE).map(k=>caches.delete(k))))));
-self.addEventListener('fetch',e=>e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request))));
+const CACHE='gm-fitness-pro-v5';self.addEventListener('install',e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll(['./','./index.html','./manifest.webmanifest','./icon.svg']))));self.addEventListener('fetch',e=>e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request))));
