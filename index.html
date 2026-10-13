@@ -182,6 +182,16 @@ canvas{width:100%;height:230px;border:1px solid var(--line);border-radius:var(--
 .tips li::marker{color:var(--green)}
 @media(max-width:380px){.set-row,.set-head{gap:6px}.kpi .n{font-size:18px}.settings-grid{grid-template-columns:1fr}}
 
+.pair{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+.pair figure{margin:0}
+.pair svg{width:100%;height:auto;display:block;border-radius:14px;border:1px solid var(--line)}
+.pair figcaption{font-size:11px;color:var(--muted);text-align:center;margin-top:5px;font-weight:700;text-transform:uppercase;letter-spacing:.4px}
+.seg4{grid-template-columns:repeat(4,1fr)}
+.seg4 button{font-size:13px;padding:0 2px}
+.tab.hidden{display:none!important}
+.rec-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 0;border-bottom:1px solid var(--line)}
+.rec-row:last-child{border-bottom:0}
+
 </style>
 <script>try{if(JSON.parse(localStorage.getItem('gmFitnessProDataV1')||'null')?.theme==='dark')document.documentElement.dataset.theme='dark';}catch(e){}</script>
 </head>
@@ -619,68 +629,77 @@ function artMix(A,B,t){return {h:[A.h[0]+(B.h[0]-A.h[0])*t,A.h[1]+(B.h[1]-A.h[1]
 function artSVG(sp,P,o){
  o=o||{};
  const f=n=>Math.round(n*10)/10;
- const OUT="#7b828b",BODY="#dfe3e8",HI="#e30613",DARK="#2b2f36",MID="#3b4149";
+ const OUT="#59606a",BASE="#cfd4da",SHADE="#7b838d",HI="#e30613",DARK="#2b2f36",MID="#3b4149";
  const L=P.L,R=P.R,sides=R?[L,R]:[L];
  const S=R?[(L.sh[0]+R.sh[0])/2,(L.sh[1]+R.sh[1])/2]:L.sh;
  const H=R?[(L.hp[0]+R.hp[0])/2,(L.hp[1]+R.hp[1])/2]:L.hp;
  const TW=R?38:30;
- const HO=o.t!==undefined?f(.5+.45*o.t):".92";
- const seg=(a,b,w,c,x="")=>`<path d="M${f(a[0])} ${f(a[1])}L${f(b[0])} ${f(b[1])}" stroke="${c}" stroke-width="${w}" stroke-linecap="round" fill="none"${x}/>`;
- const dot=(p,r,c)=>`<circle cx="${f(p[0])}" cy="${f(p[1])}" r="${r}" fill="${c}"/>`;
- const body=g=>{const c=g?OUT:BODY;return seg(S,H,TW+g*2,c)+sides.map(sd=>[[sd.sh,sd.el,13],[sd.el,sd.wr,11],[sd.hp,sd.kn,19],[sd.kn,sd.an,14]].map(([a,b,w])=>seg(a,b,w+g*2,c)).join("")+dot(sd.wr,6+g,c)).join("")+`<circle cx="${f(P.h[0])}" cy="${f(P.h[1])}" r="${13+g}" fill="${c}"/>`;};
- /* traiettorie: linea tratteggiata + punta per polsi e caviglie */
+ const HO=o.t!==undefined?f(.55+.4*o.t):".95";
+ const seg=(a,b,w,c,x="")=>`<path d="M${f(a[0])} ${f(a[1])}L${f(b[0])} ${f(b[1])}" stroke="${c}" stroke-width="${f(w)}" stroke-linecap="round" fill="none"${x}/>`;
+ const dot=(p,r,c)=>`<circle cx="${f(p[0])}" cy="${f(p[1])}" r="${f(r)}" fill="${c}"/>`;
+ /* tubo con ombreggiatura: base, lato in ombra, riflesso sul lato illuminato (luce da alto-sinistra) */
+ const tube=(a,b,w)=>{
+  const dx=b[0]-a[0],dy=b[1]-a[1],d=Math.hypot(dx,dy)||1;
+  let nx=-dy/d,ny=dx/d;if(nx+ny>0){nx=-nx;ny=-ny;}
+  const k=w*.22,p=(pt,s)=>[pt[0]+nx*s,pt[1]+ny*s];
+  return seg(a,b,w,BASE)+seg(p(a,-k),p(b,-k),w*.5,SHADE,' opacity=".5"')+seg(p(a,k),p(b,k),w*.22,"#ffffff",' opacity=".85"');
+ };
+ const limbs=sides.map(sd=>[[sd.sh,sd.el,13],[sd.el,sd.wr,11],[sd.hp,sd.kn,19],[sd.kn,sd.an,14]]);
+ const outline=()=>seg(S,H,TW+4,OUT)+limbs.map(list=>list.map(([a,b,w])=>seg(a,b,w+4,OUT)).join("")).join("")+sides.map(sd=>dot(sd.wr,8,OUT)).join("")+`<circle cx="${f(P.h[0])}" cy="${f(P.h[1])}" r="15" fill="${OUT}"/>`;
+ const fill=()=>tube(S,H,TW)+limbs.map(list=>list.map(([a,b,w])=>tube(a,b,w)).join("")).join("")+sides.map(sd=>dot(sd.wr,6,BASE)).join("")+`<circle cx="${f(P.h[0])}" cy="${f(P.h[1])}" r="13" fill="url(#hdg)"/>`;
+ /* traiettorie */
  let trail="";
  if(o.trails&&o.A&&o.B){
-  const sideKeys=R?[["L",L],["R",R]]:[["L",L]];
   ["wr","an"].forEach(k=>{
-   [["L",o.A.L,o.B.L],["R",o.A.R,o.B.R]].forEach(([,a0,b0])=>{
+   [[o.A.L,o.B.L],[o.A.R,o.B.R]].forEach(([a0,b0])=>{
     if(!a0||!b0)return;const a=a0[k],b=b0[k];const dx=b[0]-a[0],dy=b[1]-a[1],d=Math.hypot(dx,dy);if(d<8)return;
     const ux=dx/d,uy=dy/d,p1=[b[0]-ux*9-uy*5,b[1]-uy*9+ux*5],p2=[b[0]-ux*9+uy*5,b[1]-uy*9-ux*5];
     trail+=`<path d="M${f(a[0])} ${f(a[1])}L${f(b[0])} ${f(b[1])}" stroke="${HI}" stroke-width="2.5" stroke-dasharray="5 5" stroke-linecap="round" fill="none" opacity=".8"/><path d="M${f(b[0])} ${f(b[1])}L${f(p1[0])} ${f(p1[1])}L${f(p2[0])} ${f(p2[1])}Z" fill="${HI}" opacity=".9"/>`;
    });
   });
-  void sideKeys;
  }
- /* muscoli attivi */
+ /* muscoli attivi: sfumati e con alone, per dare volume */
  const ax=H[0]-S[0],ay=H[1]-S[1],len=Math.hypot(ax,ay)||1,ux=ax/len,uy=ay/len,vx=-uy,vy=ux;
  const at=(t,off)=>[S[0]+ax*t+vx*off,S[1]+ay*t+vy*off];
  const rot=Math.atan2(uy,ux)*180/Math.PI+90;
- const ell=(c,rx,ry)=>`<ellipse cx="${f(c[0])}" cy="${f(c[1])}" rx="${rx}" ry="${ry}" transform="rotate(${f(rot)} ${f(c[0])} ${f(c[1])})" fill="${HI}" opacity="${HO}"/>`;
+ const ell=(c,rx,ry)=>`<ellipse cx="${f(c[0])}" cy="${f(c[1])}" rx="${rx}" ry="${ry}" transform="rotate(${f(rot)} ${f(c[0])} ${f(c[1])})" fill="url(#mus)" opacity="${HO}"/>`;
+ const ring=(c,r)=>`<circle cx="${f(c[0])}" cy="${f(c[1])}" r="${r}" fill="url(#mus)" opacity="${HO}"/>`;
  const m=new Set(sp.m);
  const hs=(a,b,w)=>seg(a,b,w,HI,` opacity="${HO}"`);
  let hi="";
  if(m.has("chest")) hi+=R?ell(at(.22,-13),15,9)+ell(at(.22,13),15,9):ell(at(.24,0),18,12);
  if(m.has("abs")) hi+=ell(at(.66,0),R?13:14,R?16:15);
  if(m.has("back")) hi+=R?ell(at(.45,-22),8,18)+ell(at(.45,22),8,18):ell(at(.45,-16),10,18);
- if(m.has("shoulder")) sides.forEach(sd=>{hi+=`<circle cx="${f(sd.sh[0])}" cy="${f(sd.sh[1])}" r="10" fill="${HI}" opacity="${HO}"/>`;});
+ if(m.has("shoulder")) sides.forEach(sd=>{hi+=ring(sd.sh,10);});
  if(m.has("biceps")||m.has("triceps")) sides.forEach(sd=>{hi+=hs(sd.sh,sd.el,13);});
  if(m.has("forearm")) sides.forEach(sd=>{hi+=hs(sd.el,sd.wr,11);});
- if(m.has("glute")) sides.forEach(sd=>{hi+=`<circle cx="${f(sd.hp[0])}" cy="${f(sd.hp[1])}" r="14" fill="${HI}" opacity="${HO}"/>`;});
+ if(m.has("glute")) sides.forEach(sd=>{hi+=ring(sd.hp,14);});
  if(m.has("quad")||m.has("ham")) sides.forEach(sd=>{hi+=hs(sd.hp,sd.kn,19);});
  if(m.has("calf")) sides.forEach(sd=>{hi+=hs(sd.kn,sd.an,14);});
+ const hiGlow=hi?`<g filter="url(#mg)" opacity=".6">${hi}</g>`:"";
  /* attrezzatura */
  const back=[],front=[],wr=sides.map(sd=>sd.wr);
  (sp.e||"none").split("+").forEach(t=>{
   if(t==="bench"){const a=[S[0]-34,S[1]+18],b=[H[0]+30,H[1]+18];back.push(seg(a,b,10,MID)+seg([a[0]+6,a[1]],[a[0]+6,182],6,MID)+seg([b[0]-6,b[1]],[b[0]-6,182],6,MID));}
-  else if(t==="hbench"){back.push(`<rect x="54" y="122" width="84" height="12" rx="6" fill="${MID}"/>`+seg([66,134],[66,182],6,MID)+seg([126,134],[126,182],6,MID));}
+  else if(t==="hbench"){back.push(`<rect x="54" y="122" width="84" height="12" rx="6" fill="url(#pad)"/>`+seg([66,134],[66,182],6,MID)+seg([126,134],[126,182],6,MID));}
   else if(t==="mat"){back.push(`<rect x="36" y="178" width="248" height="9" rx="4.5" fill="#c9cdd3"/>`);}
   else if(t==="frame"){back.push(seg([62,40],[62,196],6,DARK)+seg([258,40],[258,196],6,DARK)+seg([62,44],[258,44],5,DARK));}
-  else if(t==="seat"){back.push(`<rect x="${f(H[0]-28)}" y="${f(H[1]+6)}" width="56" height="10" rx="5" fill="${DARK}"/>`+seg([H[0]-26,H[1]+10],[H[0]-26,H[1]-44],7,DARK));}
-  else if(t==="pad"){front.push(`<rect x="${f(L.an[0]-12)}" y="${f(L.an[1]-6)}" width="24" height="10" rx="5" fill="${DARK}"/>`);}
+  else if(t==="seat"){back.push(`<rect x="${f(H[0]-28)}" y="${f(H[1]+6)}" width="56" height="10" rx="5" fill="url(#pad)"/>`+seg([H[0]-26,H[1]+10],[H[0]-26,H[1]-44],7,DARK));}
+  else if(t==="pad"){front.push(`<rect x="${f(L.an[0]-12)}" y="${f(L.an[1]-6)}" width="24" height="10" rx="5" fill="url(#pad)"/>`);}
   else if(t==="sled"){back.push(seg([184,172],[250,140],14,DARK));}
   else if(t==="bwbar"){front.push(seg([84,14],[236,14],7,DARK)+seg([84,14],[84,26],5,DARK)+seg([236,14],[236,26],5,DARK));}
   else if(t==="pulley"){front.push(seg([104,14],[216,14],7,DARK)+sides.map(sd=>seg([sd.wr[0],14],sd.wr,2,"#8b9199")).join(""));}
-  else if(t==="bar"){const y=L.wr[1];front.push(seg([58,y],[262,y],5,DARK)+`<rect x="50" y="${f(y-16)}" width="12" height="32" rx="3" fill="${DARK}"/><rect x="258" y="${f(y-16)}" width="12" height="32" rx="3" fill="${DARK}"/>`);}
-  else if(t==="barS"){const y=L.sh[1]-8;front.push(seg([96,y],[224,y],5,DARK)+`<rect x="86" y="${f(y-14)}" width="12" height="28" rx="3" fill="${DARK}"/><rect x="222" y="${f(y-14)}" width="12" height="28" rx="3" fill="${DARK}"/>`);}
-  else if(t==="barH"){const y=H[1]-4;front.push(seg([H[0]-42,y],[H[0]+42,y],5,DARK)+`<rect x="${f(H[0]-52)}" y="${f(y-14)}" width="11" height="28" rx="3" fill="${DARK}"/><rect x="${f(H[0]+41)}" y="${f(y-14)}" width="11" height="28" rx="3" fill="${DARK}"/>`);}
+  else if(t==="bar"){const y=L.wr[1];front.push(seg([58,y],[262,y],5,DARK)+`<rect x="50" y="${f(y-16)}" width="12" height="32" rx="3" fill="url(#pad)"/><rect x="258" y="${f(y-16)}" width="12" height="32" rx="3" fill="url(#pad)"/>`);}
+  else if(t==="barS"){const y=L.sh[1]-8;front.push(seg([96,y],[224,y],5,DARK)+`<rect x="86" y="${f(y-14)}" width="12" height="28" rx="3" fill="url(#pad)"/><rect x="222" y="${f(y-14)}" width="12" height="28" rx="3" fill="url(#pad)"/>`);}
+  else if(t==="barH"){const y=H[1]-4;front.push(seg([H[0]-42,y],[H[0]+42,y],5,DARK)+`<rect x="${f(H[0]-52)}" y="${f(y-14)}" width="11" height="28" rx="3" fill="url(#pad)"/><rect x="${f(H[0]+41)}" y="${f(y-14)}" width="11" height="28" rx="3" fill="url(#pad)"/>`);}
   else if(t==="db"){wr.forEach(w=>{front.push(seg([w[0]-9,w[1]],[w[0]+9,w[1]],5,DARK)+dot([w[0]-10,w[1]],5,DARK)+dot([w[0]+10,w[1]],5,DARK));});}
   else if(t.indexOf("cable")===0){const py=t==="cablehi"?24:t==="cablelo"?170:110;back.push(seg([240,16],[240,206],2,"#aab0b8"));front.push(sides.map(sd=>seg([240,py],sd.wr,2,DARK)).join("")+dot([240,py],6,DARK));}
  });
  const mlab=sp.m.length?(ART_MUSCLE_LABEL[sp.m[0]]||"Muscoli"):"Esercizio";
  const cw=Math.round(mlab.length*7.4+26);
- const chip=`<rect x="14" y="188" width="${cw}" height="22" rx="11" fill="${HI}"/><text x="27" y="203" font-family="Arial,Helvetica,sans-serif" font-size="11" font-weight="700" fill="#fff">${mlab}</text>`;
- const svg=`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 220"><rect width="320" height="220" rx="22" fill="#f3f4f6"/><ellipse cx="160" cy="199" rx="96" ry="5" fill="#000" opacity=".08"/>${back.join("")}${body(2)}${body(0)}${hi}${trail}${front.join("")}${chip}</svg>`;
- return svg;
+ const chip=`<rect x="14" y="186" width="${cw}" height="22" rx="11" fill="${HI}"/><text x="27" y="201" font-family="Arial,Helvetica,sans-serif" font-size="11" font-weight="700" fill="#fff">${mlab}</text>`;
+ const defs=`<defs><radialGradient id="studio" cx=".5" cy=".35" r=".8"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#e4e7eb"/></radialGradient><radialGradient id="hdg" cx=".36" cy=".3" r=".75"><stop offset="0" stop-color="#ffffff"/><stop offset=".55" stop-color="#d5dae0"/><stop offset="1" stop-color="#8e959e"/></radialGradient><radialGradient id="mus" cx=".38" cy=".32" r=".7"><stop offset="0" stop-color="#ff8080"/><stop offset=".55" stop-color="#e30613"/><stop offset="1" stop-color="#9a0010"/></radialGradient><linearGradient id="pad" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5d646e"/><stop offset="1" stop-color="#1c1f24"/></linearGradient><filter id="mg" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="2.6"/></filter><filter id="sf" x="-30%" y="-150%" width="160%" height="400%"><feGaussianBlur stdDeviation="3.5"/></filter></defs>`;
+ return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 220">${defs}<rect width="320" height="220" rx="22" fill="url(#studio)"/><ellipse cx="160" cy="199" rx="96" ry="6" fill="#000" opacity=".22" filter="url(#sf)"/>${back.join("")}${outline()}${fill()}${hiGlow}${hi}${trail}${front.join("")}${chip}</svg>`;
 }
 
 /* Immagine statica (miniature, scheda, libreria): posa iniziale */
@@ -811,7 +830,7 @@ const INFO_FALLBACK=[
 ["Scegli un carico con cui completi tutte le ripetizioni senza perdere la postura|Aggiungi note personali in Esercizi ✎ per ricordare esecuzione e carichi"]
 ];
 
-const APP_VERSION="12.0",APP_BUILD="13 ott 2026";
+const APP_VERSION="12.1",APP_BUILD="13 ott 2026";
 function applyTheme(){const dark=state.theme==="dark";document.documentElement.dataset.theme=dark?"dark":"light";const m=document.querySelector('meta[name="theme-color"]');if(m)m.content=dark?"#0b0c0f":"#0e0f12";}
 function setTheme(t){state.theme=t==="dark"?"dark":"light";save();applyTheme();openSettings();}
 function fmtKg(v){return String(Math.round(Number(v)*10)/10).replace(".",",");}
@@ -930,6 +949,7 @@ function openExerciseInfo(name){
  document.getElementById("modalRoot").innerHTML=`<div class="modal" onclick="if(event.target===this)closeModal()"><div class="sheet"><div class="handle"></div>
 <div class="row between"><div class="grow"><h2>${esc(name)}</h2><div class="muted">${esc(equipOf(name))}</div></div><button class="btn light small" onclick="closeModal()">Chiudi</button></div>
 <div class="anim-wrap"><div id="infoArt"></div><div class="anim-bar"><button id="infoPlay" class="pill" onclick="infoAnimToggle()">❚❚ Pausa</button><span class="legend"><i class="lg-muscle"></i>Muscoli attivi<i class="lg-path"></i>Traiettoria</span></div></div>
+<div class="pair"><figure>${artSVG(sp,artResolve(ART_POSE[sp.a]||ART_POSE.stand),{})}<figcaption>Inizio</figcaption></figure><figure>${artSVG(sp,artResolve(ART_POSE[sp.b]||ART_POSE.stand),{})}<figcaption>Fine</figcaption></figure></div>
 <div class="tag-row">${muscles.map(m=>`<span class="chip red">${esc(m)}</span>`).join("")}</div>
 <div class="section-title"><h3>Come si esegue</h3></div><ol class="steps">${g.how.map(s=>`<li>${esc(s)}</li>`).join("")}</ol>
 <div class="section-title"><h3>Consigli tecnici</h3></div><ul class="tips">${g.tip.map(s=>`<li>${esc(s)}</li>`).join("")}</ul>
@@ -946,6 +966,11 @@ function progressSeries(name){
  arr.forEach((p,i)=>{p.delta=i?+(p.weight-arr[i-1].weight).toFixed(2):0;});
  return arr;
 }
+function setExTab(i){
+ document.querySelectorAll(".tab").forEach(el=>el.classList.toggle("hidden",Number(el.dataset.tab)!==i));
+ document.querySelectorAll("#exSeg button").forEach((b,k)=>b.classList.toggle("on",k===i));
+ if(i===2){drawProgressChart();renderChartInfo();}
+}
 function openExercise(name){
  const hist=state.logs.filter(x=>x.exercise===name&&x.done).sort((a,b)=>(b.date+b.time).localeCompare(a.date+a.time));
  const weights=hist.filter(x=>x.weight).map(x=>Number(x.weight)),max=weights.length?Math.max(...weights):0;
@@ -956,22 +981,39 @@ function openExercise(name){
  const total=pts.length>1?+(pts[pts.length-1].weight-pts[0].weight).toFixed(2):0;
  const pct=pts.length>1&&pts[0].weight?Math.round(total/pts[0].weight*100):0;
  const sg=v=>(v>0?"+":"")+fmtKg(v);
+ const bestPt=pts.reduce((b,p)=>!b||p.weight>b.weight?p:b,null);
+ const oneBest=hist.filter(x=>x.weight&&x.reps).reduce((b,x)=>{const v=Number(x.weight)*(1+Number(x.reps)/30);return !b||v>b.v?{v,x}:b;},null);
+ const volume=hist.reduce((s,x)=>s+(Number(x.weight)||0)*(Number(x.reps)||0),0);
+ const sessions=new Set(hist.map(x=>x.date)).size;
+ const tabs=["Descrizione","Storico","Grafici","Record"];
  document.getElementById("modalRoot").innerHTML=`<div class="modal" onclick="if(event.target===this)closeModal()"><div class="sheet"><div class="handle"></div>
 <div class="row between"><div class="grow"><h2>${esc(name)}</h2><div class="muted">${esc(muscleOf(name))}</div></div><button class="help-btn" aria-label="Come si esegue" onclick="openExerciseInfo(${qa(name)})">?</button><button class="btn light small" onclick="closeModal()">Chiudi</button></div>
+<div id="exSeg" class="seg seg4" role="tablist" style="margin-top:12px">${tabs.map((t,i)=>`<button class="${i===0?"on":""}" onclick="setExTab(${i})">${t}</button>`).join("")}</div>
+<div class="tab" data-tab="0">
 ${imageTag(exerciseImage(name),"content-image exercise-demo-image",name)}${noteTag(exerciseInfo(name).note)}
 <div class="kpis"><div class="kpi"><div class="n">${max?max+" kg":"—"}</div><div class="l">Peso massimo</div></div><div class="kpi"><div class="n">${one?fmtKg(one.toFixed(1)):"—"}</div><div class="l">1RM stimato</div></div><div class="kpi"><div class="n">${hist.length}</div><div class="l">Serie registrate</div></div></div>
+<div class="section-title"><h2>Ultima performance</h2><span class="chip">${last.length?fmtDate(last[0].date):"Nessun dato"}</span></div>
+<div class="card" style="margin:0 0 12px">${last.length?last.map(x=>`<div class="row between" style="padding:7px 0;border-bottom:1px solid var(--line)"><span>Serie ${x.set}</span><b>${esc(setText(x))}</b></div>`).join(""):'<div class="empty">Quando registri questo esercizio, qui comparirà il peso e le ripetizioni dell’ultima volta.</div>'}</div>
+<div class="row" style="margin-top:12px"><button class="btn red grow" onclick="closeModal();go('workout')">Registra ora</button><button class="btn light" onclick="toggleFixed(${qa(name)})">${state.fixed[name]?"✓ Fisso":"Imposta fisso"}</button></div>
+</div>
+<div class="tab hidden" data-tab="1"><div class="card" style="margin:0">${hist.slice(0,40).map(x=>`<div class="history-item"><div class="row between"><b>${fmtDate(x.date)}</b><span>${esc(setText(x))}</span></div><div class="muted">${esc(x.program)} · ${esc(x.workout)}</div></div>`).join("")||'<div class="empty">Nessuno storico.</div>'}</div></div>
+<div class="tab hidden" data-tab="2">
 <div class="section-title"><h2>Andamento carico</h2>${pts.length>1?`<span class="chip ${total>=0?"green":"red"}">${sg(total)} kg · ${sg(pct)}%</span>`:""}</div>
 <div class="muted" style="margin:-4px 0 8px">Tocca il grafico per vedere data e carico di ogni sessione.</div>
 <canvas id="exChart" aria-label="Grafico andamento carico"></canvas>
 <div id="chartInfo" class="chart-info"></div>
 <div class="section-title"><h3>Variazioni di carico</h3><span class="muted">${chg.length} modifiche</span></div>
 <div class="card" style="margin:0 0 12px;padding:4px 14px">${chg.map(o=>`<button class="chg" onclick="selectChartPoint(${o.i})"><span><b>${esc(fmtLong(o.p.date))}</b><span class="muted" style="display:block">${o.i>0?esc(fmtKg(pts[o.i-1].weight))+" → ":""}${esc(fmtKg(o.p.weight))} kg</span></span><span class="chip ${o.p.delta>0?"green":"red"}">${sg(o.p.delta)} kg</span></button>`).join("")||'<div class="empty">Nessuna variazione di carico registrata.</div>'}</div>
-<div class="section-title"><h2>Ultima performance</h2><span class="chip">${last.length?fmtDate(last[0].date):"Nessun dato"}</span></div>
-<div class="card" style="margin:0 0 12px">${last.length?last.map(x=>`<div class="row between" style="padding:7px 0;border-bottom:1px solid var(--line)"><span>Serie ${x.set}</span><b>${esc(setText(x))}</b></div>`).join(""):'<div class="empty">Quando registri questo esercizio, qui comparirà il peso e le ripetizioni dell’ultima volta.</div>'}</div>
-<div class="section-title"><h2>Storico</h2></div><div class="card" style="margin:0">${hist.slice(0,30).map(x=>`<div class="history-item"><div class="row between"><b>${fmtDate(x.date)}</b><span>${esc(setText(x))}</span></div><div class="muted">${esc(x.program)} · ${esc(x.workout)}</div></div>`).join("")||'<div class="empty">Nessuno storico.</div>'}</div>
-<div class="row" style="margin-top:12px"><button class="btn red grow" onclick="closeModal();go('workout')">Registra ora</button><button class="btn light" onclick="toggleFixed(${qa(name)})">${state.fixed[name]?"✓ Fisso":"Imposta fisso"}</button></div>
+</div>
+<div class="tab hidden" data-tab="3"><div class="card" style="margin:0">
+<div class="rec-row"><span><b>Carico massimo</b><span class="muted" style="display:block">${bestPt?fmtLong(bestPt.date):"—"}</span></span><b>${bestPt?fmtKg(bestPt.weight)+" kg":"—"}</b></div>
+<div class="rec-row"><span><b>1RM stimato migliore</b><span class="muted" style="display:block">${oneBest?fmtLong(oneBest.x.date)+" · "+fmtKg(oneBest.x.weight)+" kg × "+esc(oneBest.x.reps):"—"}</span></span><b>${oneBest?fmtKg(oneBest.v.toFixed(1))+" kg":"—"}</b></div>
+<div class="rec-row"><span><b>Volume totale</b><span class="muted" style="display:block">kg sollevati × ripetizioni</span></span><b>${Math.round(volume).toLocaleString("it-IT")} kg</b></div>
+<div class="rec-row"><span><b>Sessioni</b><span class="muted" style="display:block">giorni con questo esercizio</span></span><b>${sessions}</b></div>
+</div></div>
+<div class="row" style="margin-top:14px"></div>
 </div></div>`;
- setTimeout(()=>{bindProgressChart();drawProgressChart();renderChartInfo();},20);
+ setTimeout(()=>{bindProgressChart();},20);
 }
 const CH_H=230;
 function chartGeom(W){return {L:44,R:W-14,T:22,B:CH_H-30};}

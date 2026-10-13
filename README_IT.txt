@@ -1,7 +1,10 @@
-GM Fitness Pro v12
+GM Fitness Pro v12.1
 
-Novità v12:
-- Versione app visibile in Impostazioni (v12.0).
+Novità v12.1:
+- Immagini degli esercizi con ombreggiatura 3D, riflessi e muscoli sfumati su fondo da studio.
+- Punto interrogativo: inizio e fine del movimento affiancati sotto l'animazione.
+- Scheda esercizio divisa in tab: Descrizione, Storico, Grafici, Record (carico massimo, 1RM migliore, volume totale, sessioni).
+- Versione app visibile in Impostazioni (v12.1).
 - Tema chiaro o scuro scelto in Impostazioni: tutte le schermate si adattano.
 - Colonna "Rec." per inserire il recupero effettivo accanto a peso e ripetizioni (es. 1:45 oppure 105). Compare anche in ultima volta, storico e grafico.
 - Grafico dell'andamento: un punto per sessione. Tocca il grafico per vedere data, carico e variazione; l'elenco "Variazioni di carico" mostra quando è cambiato il peso.
