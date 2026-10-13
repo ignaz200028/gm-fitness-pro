@@ -1,3 +1,19 @@
+GM Fitness Pro v11
+
+Novità v11:
+- Grafica rinnovata: palette più pulita, card e pulsanti più ordinati, icone vettoriali nella barra in basso.
+- Mini-timer di recupero: mentre il timer è attivo lo vedi anche quando sei in Oggi, Esercizi, Progressi o Altro.
+- Correzione: il pulsante ✎ della libreria esercizi ora funziona (prima poteva non rispondere).
+- Correzione: esercizi con apostrofo nel nome si aprono correttamente.
+- Grafico dei carichi nitido su iPhone (Retina).
+- Campi di input a 16 px: iOS non ingrandisce più la pagina quando scrivi.
+- Icona per la schermata Home di iPhone (apple-touch-icon).
+- Service worker aggiornato: le modifiche future arrivano senza dover svuotare la cache.
+
+Nessun dato salvato viene modificato o cancellato con questo aggiornamento.
+
+--- Versioni precedenti ---
+
 GM Fitness Pro v10
 
 Novità v10:
