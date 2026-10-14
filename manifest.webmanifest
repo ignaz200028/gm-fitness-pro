@@ -1,26 +1,44 @@
 {
+  "id": "./",
   "name": "GM Fitness Pro",
   "short_name": "GM Fitness",
-  "start_url": "./",
+  "description": "Diario fitness offline con programmi, allenamenti, progressi e backup.",
+  "lang": "it-IT",
+  "start_url": "./index.html?source=pwa",
+  "scope": "./",
   "display": "standalone",
-  "background_color": "#f2f3f5",
-  "theme_color": "#0e0f12",
-  "lang": "it",
+  "orientation": "any",
+  "background_color": "#0b0c0f",
+  "theme_color": "#0b0c0f",
+  "categories": [
+    "fitness",
+    "health",
+    "sports"
+  ],
   "icons": [
     {
-      "src": "icons/icon-192.png",
+      "src": "./icons/icon-192.png",
       "sizes": "192x192",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any"
     },
     {
-      "src": "icons/icon-512.png",
+      "src": "./icons/icon-512.png",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any"
     },
     {
-      "src": "icon.svg",
-      "sizes": "any",
-      "type": "image/svg+xml"
+      "src": "./icons/maskable-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "./icons/maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
     }
   ]
 }
